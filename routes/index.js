@@ -1,6 +1,11 @@
+'use strict';
+
 var express = require('express');
 var router = express.Router();
 var GitHubApi = require('github');
+
+console.log('asasasasasas');
+
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
@@ -33,30 +38,26 @@ router.get('/:userName', function(req, res, next) {
 
 
   var a = 'vvvvvv';
+  let currentUserName = '';
 
-
-  // github.users.getForUser({
-  //   user: 'nighthavvk'
-  // }).then((result) => {
-  //   res.send(JSON.stringify(result));
-  // });
-
-  github.repos.getForUser({
+  github.users.getForUser({
     user: 'nighthavvk'
-    }).then((result) => {
-      if (result) {
-        //res.send(JSON.stringify(result));
-        result.forEach((item, array, index) => {
-          github.repos.getCommits({
-            user: 'nighthavvk',
-            repo: item.name
-          }).then((result) => {
-            res.send(JSON.stringify(result));
-          });
-        })
-      }
-  }).catch(() => {
-
+  }).then((result) => {
+    currentUserName = result.name;
+    return github.repos.getForUser({
+      user: 'nighthavvk'
+    });
+  }).then((result) => {
+    if (result) {
+      result.forEach((item, array, index) => {
+        github.repos.getCommits({
+          user: 'nighthavvk',
+          repo: item.name
+        }).then((result) => {
+          res.send(JSON.stringify({'aaa':'bbb'}));
+        });
+      })
+    }
   });
 });
 
