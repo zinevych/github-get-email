@@ -2,62 +2,42 @@
 
 var express = require('express');
 var router = express.Router();
-var GitHubApi = require('github');
-
-console.log('asasasasasas');
-
+var githubApi = require('../utils/githubApi');
 
 /* GET home page. */
-router.get('/', function(req, res, next) {
-  res.render('index', { title: 'Express' });
+router.get('/', function (req, res, next) {
+  res.render('index', {title: 'Express'});
 });
 
-router.get('/:userName', function(req, res, next) {
-  console.log(req.params.userName);
+router.get('/:userName', function (req, res, next) {
+  githubApi.init();
+  var github = githubApi.api();
 
+  console.log(github);
 
-  var github = new GitHubApi({
-    // optional args
-    debug: true,
-    protocol: "https",
-    host: "api.github.com", // should be api.github.com for GitHub
-    //pathPrefix: "/api/v3", // for some GHEs; none for GitHub
-    headers: {
-      //"user-agent": "My-Cool-GitHub-App" // GitHub is happy with a unique user agent
-    },
-    followRedirects: false, // default: true; there's currently an issue with non-get redirects, so allow ability to disable follow-redirects
-    timeout: 5000
-  });
-
-  // basic
-  github.authenticate({
-    type: "basic",
-    username: 'github.get.email@gmail.com',
-    password: 'githubgetemail123456789'
-  });
-
-
-  var a = 'vvvvvv';
-  let currentUserName = '';
-
-  github.users.getForUser({
-    user: 'nighthavvk'
-  }).then((result) => {
-    currentUserName = result.name;
-    return github.repos.getForUser({
-      user: 'nighthavvk'
-    });
-  }).then((result) => {
-    if (result) {
-      result.forEach((item, array, index) => {
-        github.repos.getCommits({
-          user: 'nighthavvk',
-          repo: item.name
-        }).then((result) => {
-          res.send(JSON.stringify({'aaa':'bbb'}));
-        });
-      })
+  Promise.all([
+    github.users.getForUser({
+      user: req.params.userName
+    }),
+    github.repos.getForUser({
+      user: req.params.userName
+    })
+  ]).then((resultsArray) => {
+    if (resultsArray[1]) {
+      return Promise.all(resultsArray[1].map((item, array, index) => {
+        return github.repos.getCommits({
+          user: req.params.userName,
+          repo: item.name,
+          author: resultsArray[0].login //need additionally investigate importance of this prop
+        })
+      }));
     }
+  }).then((resultsArray) => {
+    res.send(resultsArray);
+  }).catch((error) => {
+    res.send({
+      message: 'Invalid User Name'
+    })
   });
 });
 
