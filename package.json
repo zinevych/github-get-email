@@ -15,8 +15,6 @@
     "morgan": "~1.7.0",
     "node-github": "0.0.3",
     "node-sass-middleware": "0.8.0",
-    "serve-favicon": "~2.3.0",
-    "webpack": "^1.13.2",
-    "webpack-dev-server": "^1.16.2"
+    "serve-favicon": "~2.3.0"
   }
 }
